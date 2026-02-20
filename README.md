@@ -21,10 +21,12 @@ The project demonstrates deploying a simple Nginx-app to Kubernetes using:
 ## 📂 Project structure
 ```
 project/
-├── namespace.yaml # Namespace for Kubernetes
-├── deploy-with-service.yaml # Deployment + Service for Nginx
+├──.github/workflows # CI/CD
+├── screenshots # Screenshots of done work
+├── Dockerfile # Image my with NGINX
 ├── README.md # This file
-├── .gitignore # Ignore local files
-└── screenshots # Screenshots of done work
+├── deploy-with-service.yaml # Deployment + Service for Nginx
+├── index.html # Web Site
+└── namespace.yaml # Namespace for Kubernetes
 ```
 
