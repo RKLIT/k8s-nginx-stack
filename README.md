@@ -24,6 +24,7 @@ project/
 ├── namespace.yaml # Namespace for Kubernetes
 ├── deploy-with-service.yaml # Deployment + Service for Nginx
 ├── README.md # This file
-└── .gitignore # Ignore local files
+├── .gitignore # Ignore local files
+└── screenshots # Screenshots of done work
 ```
 
