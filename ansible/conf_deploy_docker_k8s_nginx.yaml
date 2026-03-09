@@ -1,0 +1,86 @@
+- name: Auto install Docker, k3s and deploy rklit application
+  hosts: servers-k8s
+  become: true
+  vars:
+    image_name: rklit/rklit-image-nginx:latest
+    kubeconfig_path: /home/vm1/.kube/config
+    namespace: website-nginx
+
+  tasks:
+    - name: Install prerequisite packages
+      apt:
+        name:
+          - mc
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+        update_cache: yes
+
+    - name: Add Docker official GPG key (dearmored)
+      shell: |
+        install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+        chmod a+r /etc/apt/keyrings/docker.gpg
+      args:
+        creates: /etc/apt/keyrings/docker.gpg
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu jammy stable"
+        state: present
+        filename: docker
+
+    - name: Install Docker Engine and plugins
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker is started and enabled
+      service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Add user 'vm1' to docker group
+      user:
+        name: vm1
+        groups: docker
+        append: yes
+
+    - name: Install k3s
+      shell: curl -sfL https://get.k3s.io | sh -
+      args:
+        creates: /usr/local/bin/k3s
+
+    - name: Configure kubectl for user vm1
+      become: true
+      shell: |
+        mkdir -p ~/.kube
+        cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+        chmod 600 ~/.kube/config
+      args:
+        executable: /bin/bash
+
+    - name: Copy k8s deployment file to VM
+      copy:
+        src: /home/vboxuser/project/deploy-with-service.yaml
+        dest: /home/vm1/deploy-with-service.yaml
+        owner: vm1
+        group: vm1
+        mode: '0644'
+
+    - name: Create Kubernetes namespace
+      become: true
+      shell: kubectl --kubeconfig ~/.kube/config create namespace {{ namespace }}
+      ignore_errors: yes
+
+    - name: Deploy application to k3s
+      become: true
+      shell: kubectl --kubeconfig ~/.kube/config apply -f /home/vm1/deploy-with-service.yaml
