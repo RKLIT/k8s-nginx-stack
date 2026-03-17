@@ -22,6 +22,7 @@ The project demonstrates deploying a simple Nginx-app to Kubernetes using:
 ```
 project/
 ├──.github/workflows # CI/CD
+├── ansible # Auto install utils for VM-s
 ├── screenshots # Screenshots of done work
 ├── Dockerfile # Image my with NGINX
 ├── README.md # This file
